@@ -13,11 +13,12 @@ const User_schema = require("../schema/user_schema");
 
 router.post("/registration", async (req, res) => {
   const data = req.body;
+  // console.log(data)
   const { error } = registration_val({ data });
   if (error) {
     res.send({ error });
   } else {
-    data["role"] = "admin";
+    // data["role"] = "admin";
     const { password } = data;
     const hash_password = bcrypt.hashSync(password, saltRounds);
     data["password"] = hash_password;
@@ -27,7 +28,7 @@ router.post("/registration", async (req, res) => {
       const response = await newUser.save();
       res.send({ user_data: response, success: true });
     } catch (error) {
-      res.send(error.message);
+      res.status(401).send(error);
     }
   }
 });

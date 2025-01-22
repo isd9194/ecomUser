@@ -15,8 +15,9 @@ app.use(
 
 // =============router=====================
 const user = require("./routes/user");
-const task = require("./routes/task");
-
+const product = require("./routes/product");
+const cart = require("./routes/cart");
+const beforeLogProduct = require("./routes/beforeLogProduct")
 // =============authorization checking=====================
 const { check_token } = require("./routes/auth");
 // =============database connection=====================
@@ -27,7 +28,9 @@ app.use(express.json());
 // app.use(check_token);
 // =============router=====================
 app.use("/user", user);
-app.use("/task", task);
+app.use("/product", product);
+app.use("/cart", cart);
+app.use("/beforeLogProduct" , beforeLogProduct)
 // ==================================
 app.listen(process.env.PORT, () => {
   console.log("working on", process.env.PORT);

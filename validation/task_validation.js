@@ -14,7 +14,7 @@ const task_edit_val = ({ data }) => {
     task_id: Joi.string().required().length(24),
     title: Joi.string().required().min(2),
     description: Joi.string().required().min(2),
-    due_date: Joi.string().required().min(2),
+    due_date: Joi.required().min(1),
   };
   const schema = Joi.object(validation_rules);
   return schema.validate(data);

@@ -13,7 +13,7 @@ const obj = {
     minlength: 2, // Minimum length of 5 characters
   },
   due_date: {
-    type: Date,
+    type: Number,
     required: true, // Validation: Field is required
   },
   completed_date: {
@@ -41,10 +41,10 @@ const obj = {
 };
 
 // Define a schema
-const userSchema = new mongoose.Schema(obj);
+const productSchema = new mongoose.Schema(obj);
 
 // Create a model based on the schema
-const Task_schema = mongoose.model("tasks", userSchema);
+const product_schema = mongoose.model("tasks", productSchema);
 
 // Export the model for use in other files
-module.exports = Task_schema;
+module.exports = product_schema;

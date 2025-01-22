@@ -2,6 +2,7 @@ const Joi = require("joi");
 
 const registration_val = ({ data }) => {
   const validation_rules = {
+    role:Joi.string(),
     name: Joi.string().required().min(2),
     email: Joi.string().required().email(),
     password: Joi.string().required().min(4),
