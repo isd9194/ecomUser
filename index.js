@@ -7,10 +7,7 @@ require("dotenv").config();
 // ==================================
 // Allow requests from localhost:3000
 app.use(
-  cors({
-    origin: "http://mysmartshop.s3-website.ap-south-1.amazonaws.com",
-    credentials: true, // if you need to send cookies or authentication headers
-  })
+  cors()
 );
 
 // =============router=====================
