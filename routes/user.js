@@ -1,19 +1,17 @@
 const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcrypt");
+const nodemailer = require("nodemailer");
 const saltRounds = 10;
 const {
   registration_val,
-  create_val,
-  remove_val,
   login_val,
 } = require("../validation/user_validation");
 const { create_token, get_token_data, check_token } = require("./auth");
 const User_schema = require("../schema/user_schema");
-
+//const
 router.post("/registration", async (req, res) => {
   const data = req.body;
-  // console.log(data)
   const { error } = registration_val({ data });
   if (error) {
     res.send({ error });
@@ -33,7 +31,7 @@ router.post("/registration", async (req, res) => {
   }
 });
 router.post("/login", async (req, res) => {
-  
+
   const { body } = req;
   const { error } = login_val({ data: body });
   if (error) {
@@ -46,7 +44,7 @@ router.post("/login", async (req, res) => {
         const { _id, role } = user_data;
         const isMatch = bcrypt.compareSync(password, user_data["password"]);
         if (isMatch) {
-          const data = { email, _id,  role };
+          const data = { email, _id, role };
           let token = create_token({ data });
           delete user_data["password"];
           res.send({ data: user_data, token });
@@ -61,63 +59,79 @@ router.post("/login", async (req, res) => {
     }
   }
 });
-router.post("/create", check_token, async (req, res) => {
-  const { headers, body: data } = req;
-  const { _id: create_by } = get_token_data({ headers });
 
-  const { error } = create_val({ data });
-  if (error) {
-    res.status(401).send({ error });
-  } else {
-    data["create_by"] = create_by;
-    const { password } = data;
-    const hash_password = bcrypt.hashSync(password, saltRounds);
-    data["password"] = hash_password;
-    delete data["confirm_password"];
-    const newUser = new User_schema(data);
-    try {
-      // const response = await insertOne({ table, value: data });
-      const response = await newUser.save();
-      res.send({ user_data: response, success: true });
-    } catch (error) {
-      res.status(401).send(error);
-    }
-  }
-});
-router.post("/remove", check_token, async (req, res) => {
-  const { headers, body: data } = req;
-  const { _id: create_by } = get_token_data({ headers });
 
-  const { error } = remove_val({ data });
-  if (error) {
-    res.send({ error });
-  } else {
-    const { user_id } = data;
 
-    try {
-      const result = await User_schema.deleteOne({ _id: user_id, create_by });
-      if (result.deletedCount === 1) {
-        res.send({ success: true });
-      } else {
-        res.send({ error: "No document found with this ID" });
-      }
-    } catch (error) {
-      res.send(error.message);
-    }
-  }
-});
-router.post("/list", async (req, res) => {
-  const { headers } = req;
-  const { _id: create_by, role } = get_token_data({ headers });
-  if (role != "admin") {
-    res.status(401).send({ error: "You can't see list" });
-    return;
-  }
+router.post("/forgotpassword", async (req, res) => {
+
+  const { email: data } = req.body;
+
   try {
-    const response = await User_schema.find({ create_by });
-    res.send(response);
+    // Find the user by email
+    const user = await User_schema.findOne({ email: data });
+    if (!user) {
+      return res.status(404).send("User not found.");
+    }
+
+    // Generate a token for password reset
+
+    let token = create_token({ data });
+    const resetLink = `http://localhost:3000/resetpassword/${token}`;
+
+    // Create transporter for sending email
+    const transporter = nodemailer.createTransport({
+      service: "gmail", // Your email provider
+      auth: {
+        user: process.env.EMAIL, // Gmail address
+        pass: process.env.EMAIL_PASSWORD, // Gmail password or app password
+      },
+    });
+
+    // Send the reset email
+    await transporter.sendMail({
+      from: process.env.EMAIL,
+      to: data,
+      subject: "Password Reset",
+      html: `<p>Click <a href="${resetLink}">here</a> to reset your smartShop password.</p>`,
+    });
+    // Send success response
+    res.send("Password reset link has been sent to your email.");
   } catch (error) {
-    res.status(401).send(error);
+    res.status(500).send("Error sending email.");
   }
 });
+
+router.post("/resetPassword", async (req, res) => {
+  const { headers, body } = req;
+  const {newPassword} = body ;
+     console.log(typeof newPassword)
+  const  email = get_token_data({ headers });
+  try {
+    // Extract email or user data from token
+    const email = get_token_data({ headers });
+
+    if (!email) {
+      return res.status(400).json({ error: "Invalid token or email not found in token" });
+    }
+
+    // Hash the new password before storing it
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update the user's password
+    const result = await User_schema.updateOne({ email }, { $set: { password: hashedPassword } });
+
+    if (result.nModified === 0) {
+      return res.status(404).json({ error: "User not found or password is the same" });
+    }
+
+    res.status(200).json({ message: "Password updated successfully" });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "An error occurred while resetting the password" });
+  }
+})
+
+
+
 module.exports = router;
