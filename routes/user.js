@@ -76,8 +76,9 @@ router.post("/forgotpassword", async (req, res) => {
     // Generate a token for password reset
 
     let token = create_token({ data });
-    const resetLink = `http://15.207.18.52:3001/resetpassword/${token}`;
-
+    
+    // const resetLink = `http://15.207.18.52:3001/resetpassword/${token}`;
+    const resetLink = `http://mysmartshop.s3-website.ap-south-1.amazonaws.com/resetpassword/:${token}`;
     // Create transporter for sending email
     const transporter = nodemailer.createTransport({
       service: "gmail", // Your email provider
