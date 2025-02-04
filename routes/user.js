@@ -76,7 +76,7 @@ router.post("/forgotpassword", async (req, res) => {
     // Generate a token for password reset
 
     let token = create_token({ data });
-    const resetLink = `http://localhost:3000/resetpassword/${token}`;
+    const resetLink = `http://15.207.18.52:3001/resetpassword/${token}`;
 
     // Create transporter for sending email
     const transporter = nodemailer.createTransport({
