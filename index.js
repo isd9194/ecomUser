@@ -6,8 +6,15 @@ require("dotenv").config();
 
 // ==================================
 // Allow requests from localhost:3000
+// app.use(
+//   cors()
+// );
 app.use(
-  cors()
+  cors({
+    origin: "http://localhost:3000", // Sirf is origin se request allow hogi
+    methods: ["GET", "POST", "PUT", "DELETE"], // Allowed methods
+    credentials: true, // Agar cookies use karni ho toh isko true rakhein
+  })
 );
 
 // =============router=====================

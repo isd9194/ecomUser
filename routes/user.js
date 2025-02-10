@@ -77,8 +77,9 @@ router.post("/forgotpassword", async (req, res) => {
 
     let token = create_token({ data });
     
-    // const resetLink = `http://15.207.18.52:3001/resetpassword/${token}`;
-    const resetLink = `http://mysmartshop.s3-website.ap-south-1.amazonaws.com/resetpassword/:${token}`;
+    // const resetLink = `http://localhost:3000/resetpassword/${token}`;
+    
+    const resetLink = `http://mysmartshop.s3-website.ap-south-1.amazonaws.com/resetpassword/${token}`;
     // Create transporter for sending email
     const transporter = nodemailer.createTransport({
       service: "gmail", // Your email provider
@@ -102,25 +103,22 @@ router.post("/forgotpassword", async (req, res) => {
   }
 });
 
-router.post("/resetPassword", async (req, res) => {
+router.post("/resetpassword", async (req, res) => {
   const { headers, body } = req;
   const {newPassword} = body ;
-     console.log(typeof newPassword)
   const  email = get_token_data({ headers });
   try {
     // Extract email or user data from token
     const email = get_token_data({ headers });
-
+        
     if (!email) {
       return res.status(400).json({ error: "Invalid token or email not found in token" });
     }
-
+       
     // Hash the new password before storing it
     const hashedPassword = await bcrypt.hash(newPassword, 10);
-
     // Update the user's password
     const result = await User_schema.updateOne({ email }, { $set: { password: hashedPassword } });
-
     if (result.nModified === 0) {
       return res.status(404).json({ error: "User not found or password is the same" });
     }
@@ -128,7 +126,6 @@ router.post("/resetPassword", async (req, res) => {
     res.status(200).json({ message: "Password updated successfully" });
 
   } catch (error) {
-    console.error(error);
     res.status(500).json({ error: "An error occurred while resetting the password" });
   }
 })

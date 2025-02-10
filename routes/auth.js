@@ -28,12 +28,15 @@ const get_token_data = ({ headers }) => {
   
   const token = authorization.split(" ");
 
-  let data1;
+
+
+let data1;
+let err1;
   jsonwebtoken.verify(token[1], jwt_pass, (err, data) => {
     data1 = data;
-
+     err1 = err;
   });
-
+  
   return data1;
 };
 
